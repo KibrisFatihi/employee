@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "controllers/": "./supabase/functions/check-in/src/controllers/",
+    "services/": "./supabase/functions/check-in/src/services/",
+    "repositories/": "./supabase/functions/check-in/src/repositories/",
+    "utils/": "./supabase/functions/check-in/src/utils/"
+  }
+}
