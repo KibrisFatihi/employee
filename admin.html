@@ -57,19 +57,24 @@
 
         <div class="right-column">
             <div class="card">
-                <h2>👥 Kayıtlı Personeller</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ad Soyad (Kullanıcı Adı)</th>
-                            <th>Aksiyon</th>
-                        </tr>
-                    </thead>
-                    <tbody id="personel-table-body">
-                        <tr><td colspan="2" style="text-align:center; color:#a8a8b3;">Yükleniyor...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+    <h2>👥 Kayıtlı Personeller</h2>
+    
+    <div class="form-group" style="margin-bottom: 15px;">
+        <input type="text" id="search-input" placeholder="🔍 Personel adı veya kullanıcı adı ara..." oninput="personelListesiniGetir()">
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Ad Soyad (Kullanıcı Adı)</th>
+                <th>Aksiyon</th>
+            </tr>
+        </thead>
+        <tbody id="personel-table-body">
+            <tr><td colspan="2" style="text-align:center; color:#a8a8b3;">Yükleniyor...</td></tr>
+        </tbody>
+    </table>
+</div>
 
             <div class="card">
                 <h2>➕ Yeni Personel Tanımla</h2>
