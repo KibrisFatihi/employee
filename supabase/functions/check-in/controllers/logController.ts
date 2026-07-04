@@ -10,7 +10,7 @@ export class LogController {
                 return new Response(JSON.stringify({ success: false, message: "Veri paketi boş!" }), { status: 400 });
             }
 
-            const sonuc = await this.logService.islemYurüt(body);
+            const sonuc = await this.logService.islemYurut(body);
 
             return new Response(JSON.stringify({
                 success: true,

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şirket Yönetim Paneli | Admin Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #121214; color: #e1e1e6; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 2px solid #29292e; margin-bottom: 30px; }
+        h1 { color: #04d361; font-size: 24px; }
+        .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background-color: #202024; border-radius: 8px; padding: 20px; border: 1px solid #29292e; }
+        h2 { font-size: 18px; margin-bottom: 15px; color: #8257e5; border-bottom: 1px solid #29292e; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #29292e; font-size: 14px; }
+        th { color: #a8a8b3; }
+        tr:hover { background-color: #29292e; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-giris { background-color: #04d361; color: #121214; }
+        .badge-cikis { background-color: #da3747; color: #fff; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #a8a8b3; font-size: 14px; }
+        input { width: 100%; padding: 10px; background-color: #121214; border: 1px solid #29292e; color: #fff; border-radius: 4px; font-size: 14px; }
+        input:focus { border-color: #04d361; outline: none; }
+        button { width: 100%; padding: 10px; background-color: #04d361; border: none; color: #121214; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        button:hover { background-color: #06b956; }
+        .btn-delete { background-color: #da3747; color: white; padding: 4px 8px; font-size: 12px; width: auto; display: inline-block; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-delete:hover { background-color: #b22432; }
+        .right-column { display: flex; flex-direction: column; gap: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏢 Şirket Personel Takip Paneli</h1>
+        <span style="color: #a8a8b3;">Senior Admin v2.0</span>
+    </header>
+
+    <div class="grid-container">
+        <div class="card">
+            <h2>⏱️ Canlı Giriş / Çıkış Akışı</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Personel</th>
+                        <th>İşlem Türü</th>
+                        <th>Sapma Mesafesi</th>
+                        <th>Tarih / Saat</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-table-body">
+                    <tr><td colspan="4" style="text-align:center; color:#a8a8b3;">Loglar yükleniyor...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="right-column">
+            <div class="card">
+                <h2>👥 Kayıtlı Personeller</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ad Soyad (Kullanıcı Adı)</th>
+                            <th>Aksiyon</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personel-table-body">
+                        <tr><td colspan="2" style="text-align:center; color:#a8a8b3;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>➕ Yeni Personel Tanımla</h2>
+                <div class="form-group">
+                    <label>Ad Soyad</label>
+                    <input type="text" id="new-fullname" placeholder="Örn: Umut Gezer">
+                </div>
+                <div class="form-group">
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" id="new-username" placeholder="Örn: umutgezer">
+                </div>
+                <div class="form-group">
+                    <label>Şifre</label>
+                    <input type="password" id="new-password" placeholder="••••••">
+                </div>
+                <button onclick="personelEkle()">Personeli Sisteme Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = "https://tcewauvsdecrhjznlkmt.supabase.co/functions/v1/admin-dashboard";
+
+        window.onload = function() {
+            verileriYukle();
+        };
+
+        async function verileriYukle() {
+            personelListesiniGetir();
+            logListesiniGetir();
+        }
+
+        // 1. TÜM PERSONELLERİ GETİR
+        async function personelListesiniGetir() {
+            try {
+                const response = await fetch(`${BASE_URL}`);
+                const resData = await response.json();
+                const tbody = document.getElementById("personel-table-body");
+                tbody.innerHTML = "";
+
+                if(resData.success && resData.data) {
+                    resData.data.forEach(p => {
+                        const gosterilecekIsim = p.ad_soyad ? p.ad_soyad : p.username;
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>
+                                    <strong>${gosterilecekIsim}</strong> 
+                                    <br><small style="color: #a8a8b3;">@${p.username}</small>
+                                </td>
+                                <td><button class="btn-delete" onclick="personelSil(${p.id})">Sil</button></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Kayıtlı personel bulunamadı.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Personel çekilirken hata oluştu kanka:", err);
+            }
+        }
+
+        // 2. CANLI LOG AKIŞINI GETİR
+        async function logListesiniGetir() {
+            try {
+                const response = await fetch(`${BASE_URL}?action=logs`);
+                const resData = await response.json();
+                const tbody = document.getElementById("logs-table-body");
+                tbody.innerHTML = "";
+
+                if(resData.success && resData.data) {
+                    resData.data.forEach(log => {
+                        const islemBadge = log.islem_turu === "GIRIS" ? 'badge-giris' : 'badge-cikis';
+                        const tarih = new Date(log.created_at).toLocaleString('tr-TR');
+                        const pName = log.personel ? (log.personel.ad_soyad ? log.personel.ad_soyad : log.personel.username) : "Bilinmeyen";
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${pName}</td>
+                                <td><span class="badge ${islemBadge}">${log.islem_turu}</span></td>
+                                <td><span style="color: #ffcd1e;">${log.sapma_mesafesi} metre</span></td>
+                                <td>${tarih}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Henüz hiç log kaydı yok.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Loglar çekilirken hata oluştu kanka:", err);
+            }
+        }
+
+        // 3. YENİ PERSONEL EKLE
+        async function personelEkle() {
+            const fullnameInput = document.getElementById("new-fullname");
+            const usernameInput = document.getElementById("new-username");
+            const passwordInput = document.getElementById("new-password");
+
+            const ad_soyad = fullnameInput.value.trim();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if(!username || !password || !ad_soyad) {
+                alert("Kanka tüm alanları doldur bi zahmet, ad soyad da şart!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, ad_soyad })
+                });
+
+                const result = await response.json();
+                if(result.success) {
+                    alert("Personel jilet gibi eklendi!");
+                    fullnameInput.value = "";
+                    usernameInput.value = "";
+                    passwordInput.value = "";
+                    verileriYukle();
+                } else {
+                    alert("Hata çıktı kanka: " + result.message);
+                }
+            } catch (err) {
+                alert("İstek atılamadı kanka.");
+            }
+        }
+
+        // 4. PERSONEL SİL
+        async function personelSil(id) {
+            if(!confirm("Bu personeli silmek istediğine emin misin kanka?")) return;
+
+            try {
+                const response = await fetch(`${BASE_URL}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                });
+
+                const result = await response.json();
+                if(result.success) {
+                    alert("Personel sistemden uçuruldu!");
+                    verileriYukle();
+                } else {
+                    alert("Silinemedi: " + result.message);
+                }
+            } catch (err) {
+                alert("Silme isteği patladı kanka.");
+            }
+        }
+    </script>
+</body>
+</html>
