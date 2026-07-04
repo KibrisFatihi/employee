@@ -132,7 +132,8 @@
                     tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Kayıtlı personel bulunamadı.</td></tr>`;
                 }
             } catch (err) {
-                console.error("Personel çekilirken hata oluştu kanka:", err);
+               alert("Tarayıcı veriyi çekerken patladı kanka! Hata: " + err.message);
+        console.error("Detaylı tarayıcı hatası:", err);
             }
         }
 
