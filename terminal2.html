@@ -1,0 +1,159 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Terminali - QR Kod</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .terminal-container {
+            background: #161623;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid #252538;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #00d2ff;
+        }
+
+        p {
+            color: #adadb8;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .qr-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            display: inline-block;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: #252538;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00d2ff, #0072ff);
+            /* Süre yönetimi aşağıda dinamik yapıldığı için burayı temizledik */
+        }
+
+        #error-msg {
+            color: #ff4a4a;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container">
+        <h1>Personel Giriş Terminali</h1>
+        <p>Lütfen telefonunuzun kamerasını açarak QR kodu taratın.</p>
+
+        <div class="qr-wrapper">
+            <canvas id="qrcode"></canvas>
+        </div>
+
+        <div class="progress-bar-container">
+            <div id="pBar" class="progress-bar"></div>
+        </div>
+        <div id="error-msg">Supabase bağlantı hatası! QR güncellenemiyor.</div>
+    </div>
+
+    <script>
+        // --- YAPILANDIRMA AYARLARI ---
+        const KAPI_ID = 2; 
+        const MOBIL_SITE_URL = "https://employee-delta-one.vercel.app"; 
+        const QR_YENILEME_SURESI_MS = 120000; // 2 Dakika (120 saniye)
+        
+        // QR Oluşturucu Tanımı
+        const qr = new QRious({
+            element: document.getElementById('qrcode'),
+            size: 256,
+            level: 'L'
+        });
+
+        // Ana Yenileme Fonksiyonu
+        async function qrKodYenile() {
+            const pBar = document.getElementById("pBar");
+            const errorMsg = document.getElementById("error-msg");
+            
+            // Progress Bar'ı anında sıfırla
+            pBar.style.transition = 'none';
+            pBar.style.width = '100%';
+            
+            try {
+                const response = await fetch(`https://tcewauvsdecrhjznlkmt.supabase.co/functions/v1/check-in?kapi=${KAPI_ID}`, {
+                    method: 'GET'
+                });
+                
+                const data = await response.json();
+                
+                if (data && data.success) {
+                    // Yönlendirme linki temizlendi
+                    qr.value = `${MOBIL_SITE_URL}/index.html?token=${data.qr_token}&kapi=${KAPI_ID}`;
+                    errorMsg.style.display = "none";
+                } else {
+                    errorMsg.style.display = "block";
+                }
+            } catch (err) {
+                console.error("QR token alınamadı...", err);
+                if (!qr.value || qr.value === "Yükleniyor...") {
+                    errorMsg.style.display = "block";
+                }
+            }
+                
+            // Progress Bar Animasyonunu Tetikle
+            setTimeout(() => {
+                pBar.style.transition = `width ${QR_YENILEME_SURESI_MS / 1000}s linear`;
+                pBar.style.width = '0%';
+            }, 100);
+        }
+
+        // İlk Çalıştırma
+        qrKodYenile();
+        
+        // Periyodik Döngü
+        setInterval(qrKodYenile, QR_YENILEME_SURESI_MS); 
+    </script>
+</body>
+</html>
