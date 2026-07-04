@@ -9,6 +9,7 @@ export class AdminRepository {
         return await this.supabase
             .from("personel")
             .select("id, username, ad_soyad, created_at")
+            .eq("is_deleted", false)
             .order("created_at", { ascending: false });
     }
 
